@@ -20,7 +20,8 @@ function App() {
   useEffect(() => { calcular() }, [dias]);
 
   const change = (ev, index) => {
-    dias[index] = parseFloat(ev.target.value);
+    debugger
+    dias[index] = parseFloat(parseToMinutes(ev.target.value));
     setDias(dias);
     calcular();
     saveCache(dias.join(','));
@@ -29,15 +30,30 @@ function App() {
   const calcular = () => {
     let resultado = dias
       .filter(dia => dia)
-      .map(valor => valor * 60)
-      .reduce((soma, nota) => soma + nota, 0);
+      .reduce((soma, nota) => parseFloat(soma) + parseFloat(nota), 0);
 
-    setTotal(resultado / 60);
+    setTotal(parseToHour(resultado));
   }
 
   const getOrCreateDias = () => {
     let cache = getCache();
     return cache ? cache.split(',') : [...Array(31)];
+  }
+
+  const parseToHour = (minutos) => {
+    if (!minutos) {
+      return;
+    }
+
+    return Math.floor(minutos / 60) + ':' + minutos % 60;
+  }
+  
+  const parseToMinutes = (dataFormat) => {
+    if (!dataFormat) {
+      return;
+    }
+
+    return dataFormat.split(':').reduce((acc,time) => (60 * acc) + +time);
   }
 
 
@@ -46,7 +62,7 @@ function App() {
       {dias.map((hora, dia) =>
         <div style={{ marginLeft: '30px' }}>
           <span>{dia + 1}</span>
-          <input value={hora} style={{ marginLeft: '30px' }} onChange={(ev) => change(ev, dia)}></input>
+          <input value={parseToHour(hora)} style={{ marginLeft: '30px' }} onBlur={(ev) => change(ev, dia)}></input>
         </div>
       )}
       <div>TOTAL: {total || 0} horas</div>
